@@ -1,0 +1,10 @@
+- name: systemctl daemon
+  shell: systemctl daemon-reload
+
+- name: restart tomcat
+  service: 
+     name: tomcat
+     state: restarted
+
+- name : copy file   
+  shell: cp -R /home/vagrant/apache-tomcat-{{tomcat_version}}.{{tomcat_subversion}}/* '{{tomcat_home}}' && chown -R '{{tomcat_user}}':'{{tomcat_group}}' /opt/tomcat/

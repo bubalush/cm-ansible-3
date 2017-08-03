@@ -1,0 +1,37 @@
+- name: Provision VM
+  hosts: localhost
+ 
+  
+  pre_tasks:
+   - debug: msg="Provision VM"
+  
+  tasks:
+    - vagrant: dest=/home/student/cm/ansible/day-3/ st=running
+      register: out
+      
+    - add_host:      
+         name: pet     
+         ansible_connection: ssh      
+         ansible_host: "{{out.ip_addr}}"      
+         ansible_port: "{{out.port}}"      
+         ansible_user: "{{out.user}}"      
+         ansible_ssh_private_key_file: "{{out.key}}"
+      when: out.state == "running"
+  
+- name: Installation Tomcat, Nginx
+  hosts: pet
+  become: yes
+  become_method: sudo
+  
+  pre_tasks:
+   - debug: msg="Let's install Nginx, Tomcat"
+   - debug: var=ansible_ssh_private_key_file
+  roles:
+   - tomcat
+   - nginx
+   
+
+
+
+
+     
