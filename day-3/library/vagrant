@@ -18,7 +18,7 @@ fi
 
 # Check Vagrantfile exists 
 if [ ! -f "$dest/Vagrantfile" ]; then
-		msg="Vagrantfile doesn't exists"
+		msg="Vagrantfile doesn't exist"
 		printf '{"failed": true, "msg": "%s"}' "$msg"
 		exit 0
 fi
