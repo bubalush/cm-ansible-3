@@ -117,7 +117,7 @@ case $st in
          delete_vm
          ;;
         *)
-  			printf '{"failed": true, "msg": "invalid state: %s"}' "$st"
+  			printf '{"failed": true, "msg": "invalid state: %s, usage(running | stopped | destroyed)"}' "$st"
       		exit 1
       	 ;;
 
