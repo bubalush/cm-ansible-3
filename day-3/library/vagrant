@@ -34,7 +34,7 @@ function get_info
 		port=$(vagrant ssh-config | awk 'NR == 4 {print $2}')
 		key=$(vagrant ssh-config | awk 'NR == 8 {print $2}')
 		user=$(vagrant ssh-config | awk 'NR == 3 {print $2}')
-		OS_name=$(vagrant ssh -c 'cat /etc/*-release')
+		OS_name=$(vagrant ssh -c 'cat /etc/*-release| head -n 1')
 		RAM=$(vagrant ssh -c 'free -m' | awk 'NR == 2 {print $2;}')
 
 	}
@@ -123,5 +123,5 @@ case $st in
 
 esac
 
-printf '{"changed": %s, "failed": false, "msg": "%s", "state": "%s", "ip_addr": "%s", "port": "%s", "key": "%s", "user": "%s", "RAM": "%s", "OS_name":"%s"}' "$changed" "$msg" "$state" "$ip_addr" "$port" "$key" "$user" "$RAM" "OS_name"
+printf '{"changed": %s, "failed": false, "msg": "%s", "state": "%s", "ip_addr": "%s", "port": "%s", "key": "%s", "user": "%s", "RAM": "%s", "OS_name":"%s"}' "$changed" "$msg" "$state" "$ip_addr" "$port" "$key" "$user" "$RAM" "$OS_name"
 exit 0
