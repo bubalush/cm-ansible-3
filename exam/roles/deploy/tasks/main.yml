@@ -1,0 +1,21 @@
+---
+# tasks file for deploy
+
+- name: be sure dir created
+  file: 
+    path: /var/lib/tomcat/webapps/
+    state: directory
+    owner: '{{tomcat_user}}'
+    group: '{{tomcat_group}}'
+
+
+- name: be sure tomcat war deployed
+  deploy: url="{{url}}" war="{{war}}" username="{{username}}" password="{{password}}" 
+  delegate_to: 127.0.0.1
+  register: out
+
+
+- name: be sure insert stamps (data and user)
+  template:
+      src: build.j2d
+      dest: "/var/lib/tomcat/webapps/deploy-info.txt"

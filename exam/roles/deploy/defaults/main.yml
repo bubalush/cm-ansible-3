@@ -1,0 +1,9 @@
+---
+# defaults file for deploy
+
+url: http://192.168.56.10
+war: /home/student/cm/ansible/day-4/mnt-lab.war
+tomcat_user: tomcat_as
+tomcat_group: tomcat_as_group
+username: tomcat
+password: tomcat

@@ -1,0 +1,32 @@
+---
+# tasks file for tomcat_test
+
+- name: stat /opt/tomcat
+  stat: path=/opt/tomcat
+  register: st
+
+- debug: msg="Path /opt/tomcat exists and is a directory"
+  when: st.stat.isdir is defined and st.stat.isdir
+
+
+- name: Check if tomcat is running
+  shell: ps aux | grep tomcat | grep -v grep
+  ignore_errors: yes
+  changed_when: false
+  register: service_tomcat_status
+
+- debug: var=service_tomcat_status.stdout_lines
+
+- name: be sure tomcat url response 200
+  uri:
+    url: http://127.0.0.1:8080
+    return_content: yes
+    status_code: 200
+  register: webpage
+
+- name: be sure Tomcat in the web page
+  assert:
+    that:
+      - "'Tomcat' in webpage.content"
+    msg: 'Fail Tomcat is not in the page content'
+

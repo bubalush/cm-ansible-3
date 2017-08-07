@@ -1,0 +1,6 @@
+Build time: Mon Aug  7 14:17:52 +03 2017
+Build Machine Name: EPBYMINW1969
+Build User Name: Nikita Dolya
+GIT URL: git@git.epam.com:siarhei_beliakou/mntlab-exam.git
+GIT Commit: abd3ee332ac163bbb6207c2d36b452702452be43
+GIT Branch: ndolya

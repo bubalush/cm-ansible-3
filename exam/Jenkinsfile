@@ -1,0 +1,93 @@
+node("${env.SLAVE}") {
+    env.PATH=env.PATH +":/home/student/maven/bin"
+
+    stage("Checkout scm")
+    {
+
+       git branch: 'ndolya', url:'git@git.epam.com:siarhei_beliakou/mntlab-exam.git'
+
+    }
+  stage("Build"){
+
+              sh  "echo Build time: ${BUILD_TIMESTAMP} > src/main/resources/build-info.txt"
+              sh  "echo Build Machine Name: ${env.SLAVE} >> src/main/resources/build-info.txt"
+              wrap([$class: 'BuildUser']){
+              sh "echo Build User Name: ${BUILD_USER} >> src/main/resources/build-info.txt"}
+
+              sh '''
+                    echo "GIT URL: `git config --get remote.origin.url`" >> src/main/resources/build-info.txt
+                    echo "GIT Commit: `git rev-parse HEAD`" >> src/main/resources/build-info.txt
+                    echo "GIT Branch: `git rev-parse --abbrev-ref HEAD`" >> src/main/resources/build-info.txt
+                    mvn clean package -DbuildNumber=${BUILD_NUMBER}
+
+                 '''
+
+  }
+
+  stage("Package"){
+
+       sh '''
+            cd target/
+            tar -czvf mnt-exam-${BUILD_NUMBER}.tar.gz mnt-exam.war
+            cp mnt-exam-${BUILD_NUMBER}.tar.gz ${WORKSPACE}/
+            rm mnt-exam-${BUILD_NUMBER}.tar.gz
+            cd ${WORKSPACE}
+            ls -la
+            '''
+       archiveArtifacts "mnt-exam-${BUILD_NUMBER}.tar.gz"
+  }
+
+  stage("Roll out Dev VM"){
+
+         withEnv([
+            "ANSIBLE_FORCE_COLOR=true", "PYTHONUNBUFFERED=1"
+             ]) {
+	            	ansiColor('xterm') {
+ 	        	sh "ansible-playbook createvm.yml -t createvm -vv"
+ 	        	sh "cat createvm.yml"
+ 	        	}
+	         }
+
+  }
+
+  stage("Provision VM"){
+
+    withEnv([
+            "ANSIBLE_FORCE_COLOR=true", "PYTHONUNBUFFERED=1"
+             ]) {
+	            	ansiColor('xterm') {
+ 	        	sh "ansible-playbook createvm.yml -t createvm,provisionvm -vv"
+ 	        	}
+	         }
+
+  }
+
+  stage("Deploy Artefact"){
+
+    withEnv([
+            "ANSIBLE_FORCE_COLOR=true", "PYTHONUNBUFFERED=1"
+             ]) {
+	            	ansiColor('xterm') {
+ 	        	 sh " ansible-playbook createvm.yml -t createvm,deploy -e war=${WORKSPACE}/target/mnt-exam.war -vv"
+ 	        	}
+	         }
+
+  }
+
+  stage("Test Artefact is deployed successfully"){
+
+       sh "echo ansible-playbook application_tests.yml -e artefact=... ..."
+
+     withEnv([
+            "ANSIBLE_FORCE_COLOR=true", "PYTHONUNBUFFERED=1"
+             ]) {
+	            	ansiColor('xterm') {
+ 	        	  sh "ansible-playbook createvm.yml -t createvm,tests -e artefact=mnt-exam -vv"
+ 	        	  sh "ansible-playbook createvm.yml -t createvm -e state=destroyed -vv"
+ 	        	}
+	         }
+	         deleteDir()
+  }
+
+}
+

@@ -1,0 +1,24 @@
+---
+# tasks file for nginx_test
+
+- name: Check if Nginx is running
+  shell: ps aux | grep nginx | grep -v grep
+  ignore_errors: yes
+  changed_when: false
+  register: service_nginx_status
+
+- name: Report status of NGINX
+  fail:
+    msg: |
+      Service nginx is not running.
+      Return code from `grep`:
+      {{ service_nginx_status.rc }}
+  when: service_nginx_status.rc != 0
+
+- name: be sure nginx url response 200
+  uri:
+    url: http://127.0.0.1:80
+    status_code: 200
+
+
+

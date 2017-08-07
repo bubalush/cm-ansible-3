@@ -1,0 +1,3 @@
+- Deployment time:{{out.dt}}
+- Deploy User:{{username}}
+- Deployment Job: {{jenkins_job_name.stdout}}

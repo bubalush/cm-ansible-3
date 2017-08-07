@@ -1,0 +1,91 @@
+- name: Create VM
+  hosts: localhost
+  tags: createvm
+  vars:
+    state: running
+
+  pre_tasks:
+   - debug: msg="Provision VM"
+
+  tasks:
+    - vagrant: dest=/home/student/cm/ansible/day-3/ st="{{state}}"
+      register: out
+
+    - add_host:
+         name: pet
+         ansible_connection: ssh
+         ansible_host: "{{out.ip_addr}}"
+         ansible_port: "{{out.port}}"
+         ansible_user: "{{out.user}}"
+         ansible_ssh_private_key_file: "{{out.key}}"
+         private_ip: "{{out.ip_private}}"
+      when: out.state == "running"
+
+- name: Installation Tomcat, Nginx
+  hosts: pet
+  become: yes
+  become_method: sudo
+  tags: provisionvm
+
+  pre_tasks:
+   - debug: msg="Let's install Nginx, Tomcat"
+
+  roles:
+   - tomcat
+   - nginx
+
+
+- name: Deploy app Tomcat
+  hosts: pet
+  become: yes
+  become_method: sudo
+  tags: deploy
+  vars:
+    url: http://{{private_ip}}
+    war: /home/student/cm/ansible/day-4/mnt-lab.war
+    username: tomcat
+    password: tomcat
+    tomcat_user: tomcat_as
+    tomcat_group: tomcat_as_group
+
+
+  pre_tasks:
+   - debug: msg="Let's deploy app Tomcat"
+   - name: Jenkins vars lookup
+     command: echo "{{ lookup('env','JOB_NAME') }}"
+     register: jenkins_job_name
+
+
+  roles:
+    - deploy
+
+- name: Application tests
+  hosts: pet
+  become: yes
+  become_method: sudo
+  tags: tests
+  vars:
+    artefact: mnt-exam
+
+  pre_tasks:
+   - debug: msg="Let's test Java, Tomcat, Nginx, App"
+
+  roles:
+   - java_test
+   - tomcat_test
+   - nginx_test
+
+  tasks:
+    - name: be sure url App response 200
+      uri:
+          url: http://{{private_ip}}/{{artefact}}/
+          return_content: yes
+          status_code: 200
+      register: webpage
+
+    - name: Fail if Deploy DETAILS is not in the page
+      assert:
+          that:
+          - "'Deploy DETAILS' in webpage.content"
+          msg: 'Fail Deploy DETAILS is not in the page content'
+

@@ -1,0 +1,54 @@
+- name: be sure group tomcat exist
+  group: 
+     name: '{{tomcat_group}}'
+     state: present
+
+- name: be sure user tomcat exist
+  user: 
+     name: '{{tomcat_user}}'
+     group: '{{tomcat_group}}'
+     state: present
+
+- name: be sure tomcat_home directory exist
+  file: 
+      path: '{{tomcat_home}}' 
+      state: directory
+      recurse: yes
+
+- name: be sure tomcat downloaded
+  get_url: 
+     url: '{{tomcat_url_download}}'
+     dest: /home/vagrant/apache-tomcat-{{tomcat_version}}.{{tomcat_subversion}}.tar.gz 
+     force: no
+
+- name: be sure tomcat archive exist
+  unarchive: 
+     src: /home/vagrant/apache-tomcat-{{tomcat_version}}.{{tomcat_subversion}}.tar.gz 
+     dest: /home/vagrant/
+     remote_src: yes
+     creates: /home/vagrant/apache-tomcat-{{tomcat_version}}.{{tomcat_subversion}}
+  notify:
+    - copy file 
+
+- name: force  notify copy file
+  meta: flush_handlers
+
+- name: be sure tomcat users define 
+  template: 
+      src: tomcat.users.j2d     
+      dest: "{{tomcat_home}}/conf/tomcat-users.xml"
+  notify:
+    - restart tomcat
+
+- name: be sure tomcat.service not changed 
+  template: 
+      src: tomcat.service.j2d     
+      dest: /etc/systemd/system/tomcat.service
+  notify:
+    - systemctl daemon
+    - restart tomcat
+
+- service: 
+      name: tomcat
+      enabled: yes
+      state: started

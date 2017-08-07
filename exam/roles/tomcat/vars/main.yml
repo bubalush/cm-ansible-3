@@ -1,0 +1,2 @@
+tomcat_url_download: http://archive.apache.org/dist/tomcat/tomcat-{{tomcat_version}}/v{{tomcat_version}}.{{tomcat_subversion}}/bin/apache-tomcat-{{tomcat_version}}.{{tomcat_subversion}}.tar.gz 
+tomcat_home: /opt/tomcat/{{tomcat_version}}.{{tomcat_subversion}}

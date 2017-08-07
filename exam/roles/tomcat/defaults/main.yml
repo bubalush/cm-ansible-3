@@ -1,0 +1,4 @@
+tomcat_version: 8
+tomcat_subversion: 0.45
+tomcat_user: tomcat_as
+tomcat_group: tomcat_as_group
