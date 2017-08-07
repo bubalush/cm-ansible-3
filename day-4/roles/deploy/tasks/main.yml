@@ -1,0 +1,34 @@
+---
+# tasks file for deploy
+
+- name: be sure dir created
+  file: 
+    path: /var/lib/tomcat/webapps/
+    state: directory
+    owner: '{{tomcat_user}}'
+    group: '{{tomcat_group}}'
+
+
+- name: be sure tomcat war deployed
+  deploy: url="{{url}}" war="{{war}}" username="{{username}}" password="{{password}}" 
+  delegate_to: 127.0.0.1
+  register: out
+
+
+- name: be sure insert stamps (data and user)
+  blockinfile:
+    block: "{{ out.dt }} {{ out.myuser }}"
+    dest: "/var/lib/tomcat/webapps/deploy-info.txt"
+    create: yes
+
+- name: Check response from Tomcat service
+  uri:
+    url: '{{url}}/{{out.path}}'
+    return_content: yes
+  register: webpage
+
+- name: Fail if Deploy DETAILS is not in the page 
+  assert:
+       that:
+         - "'Deploy DETAILS' in webpage.content"
+       msg: 'Fail Deploy DETAILS is not in the page content'

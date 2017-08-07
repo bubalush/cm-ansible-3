@@ -1,0 +1,45 @@
+- name: Installation Tomcat, Nginx
+  hosts: tomcat
+  become: yes
+  become_method: sudo
+  
+
+  pre_tasks:
+   - debug: msg="Let's install Nginx, Tomcat"
+   - set_fact:
+        tomcat_version: 8
+        tomcat_subversion: 0.45
+        tomcat_user: tomcat_as
+        tomcat_group: tomcat_as_group
+  
+  roles:
+   - tomcat
+   - nginx
+
+  
+
+- name: Deploy app Tomcat
+  hosts: tomcat
+  become: tomcat
+  become: yes
+  become_method: sudo
+  vars:
+    url: http://192.168.56.10
+    war: /home/student/cm/ansible/day-4/mnt-lab.war
+    username: tomcat
+    password: tomcat
+
+  
+  pre_tasks:
+   - debug: msg="Let's deploy app Tomcat"
+  
+
+  roles:
+    - deploy
+
+
+
+
+
+
+     
